@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>박재현 채널 - 댓글 답글 대시보드</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+  background: #f9fafb;
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 20px 24px 80px; }
+header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+h1 { font-size: 22px; margin: 0 0 4px; color: #111827; }
+.sub { color:#6b7280; font-size: 13px; }
+.last-update { font-size: 11px; color:#9ca3af; margin-top:4px; }
+.header-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+.btn { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; }
+.btn:hover { background: #f3f4f6; }
+.btn.primary { background: #ef4444; color: #fff; border-color: #ef4444; }
+.btn.primary:hover { background: #dc2626; }
+.btn.primary:disabled { background:#fca5a5; cursor:wait; }
+.btn.collect { background: #2563eb; color: #fff; border-color: #2563eb; font-size:14px; padding: 10px 18px; }
+.btn.collect:hover { background:#1d4ed8; }
+.btn.collect:disabled { background:#93c5fd; cursor:wait; }
+.btn.success { background:#10b981; color:#fff; border-color:#10b981; }
+.btn.success:hover { background:#059669; }
+.btn.ghost { background: transparent; border-color: transparent; color: #6b7280; }
+.btn.small { padding: 6px 10px; font-size: 12px; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+.stat { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; }
+.stat .n { font-size: 24px; font-weight: 700; color:#111827; }
+.stat .l { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 999px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #374151; }
+.tab:hover { background: #e5e7eb; }
+.tab.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+.tab .c { opacity: .65; margin-left: 4px; }
+
+.list { display: flex; flex-direction: column; gap: 10px; }
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; transition: all .15s; }
+.card:hover { border-color: #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.card.done { opacity: .45; background:#f9fafb; }
+.card-top { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.author { font-weight: 600; color:#111827; font-size:13px; }
+.date { color:#9ca3af; font-size: 12px; }
+.likes { color:#ef4444; font-size: 12px; }
+.video-link { color:#3b82f6; font-size:12px; text-decoration:none; }
+.video-link:hover { text-decoration: underline; }
+.badge { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.b-ai { background:#ede9fe; color:#5b21b6; }
+.text { background:#f9fafb; border-left: 3px solid #e5e7eb; padding: 10px 12px; border-radius: 6px; margin: 6px 0 10px; white-space: pre-wrap; color: #374151; font-size: 13px; }
+.reply-box { margin-top: 10px; }
+.reply-label { font-size:11px; color:#5b21b6; font-weight:600; margin-bottom:4px; }
+.reply-box textarea { width: 100%; min-height: 80px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 13px; resize: vertical; background: #fff; }
+.actions { display:flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 100; max-width: 90vw; }
+.toast.show { opacity: 1; }
+.toast.error { background: #dc2626; }
+
+.banner { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; color: #1e40af; display:none; }
+.banner.show { display:block; }
+.banner.error { background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+
+.empty { text-align:center; color:#9ca3af; padding: 40px 20px; font-size: 14px; }
+
+dialog { border: none; border-radius: 12px; padding: 24px; max-width: 480px; width: 90vw; box-shadow: 0 20px 25px -5px rgba(0,0,0,.1); }
+dialog::backdrop { background: rgba(0,0,0,.4); }
+dialog h2 { margin: 0 0 12px; font-size: 18px; color: #111827; }
+dialog p { color: #4b5563; font-size: 13px; margin: 8px 0; }
+dialog input { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; margin-top: 8px; font-family: monospace; }
+dialog .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top: 16px; }
+.help-link { color:#2563eb; text-decoration:none; font-size:12px; }
+.help-link:hover { text-decoration: underline; }
+
+@media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>박재현 채널 댓글 답글 대시보드</h1>
+      <div class="sub">YouTube Studio "응답 없음" 필터와 동일 · 최신순 · AI 초안 자동 작성</div>
+      <div class="last-update" id="last-update">로딩 중...</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn collect" id="btn-collect">🔄 수집 (20개)</button>
+      <button class="btn small" id="btn-refresh">새로고침</button>
+      <button class="btn small ghost" id="btn-settings">⚙️ 설정</button>
+    </div>
+  </header>
+
+  <div class="banner" id="banner"></div>
+  <div class="stats" id="stats"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" style="display:none">표시할 댓글이 없습니다. "🔄 수집" 버튼으로 새 댓글을 가져오세요.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<dialog id="settings-dialog">
+  <h2>⚙️ 설정</h2>
+  <p><b>GitHub 리포지토리</b> (owner/repo 형식)</p>
+  <input id="cfg-repo" placeholder="예: drparkjh/youtube-comments" />
+  <p style="margin-top:14px;"><b>GitHub Personal Access Token</b></p>
+  <p style="font-size:11px;color:#9ca3af;margin-top:2px;">"수집" 버튼이 GitHub Actions를 트리거할 때 사용. <code>repo</code> 또는 <code>workflow</code> 권한이 필요합니다. localStorage에만 저장되며 외부로 전송되지 않습니다.</p>
+  <input id="cfg-pat" type="password" placeholder="ghp_..." />
+  <p style="font-size:11px;margin-top:4px;"><a class="help-link" href="https://github.com/settings/personal-access-tokens/new" target="_blank">→ Fine-grained PAT 발급 페이지 열기</a></p>
+  <div class="dialog-actions">
+    <button class="btn" onclick="document.getElementById('settings-dialog').close()">취소</button>
+    <button class="btn primary" onclick="saveSettings()">저장</button>
+  </div>
+</dialog>
+
+<script>
+// ===== 설정 =====
+const STORAGE_REPO = 'pjh_repo';
+const STORAGE_PAT = 'pjh_pat';
+const STORAGE_DONE = 'pjh_done_v2';
+const WORKFLOW_FILE = 'collect.yml';
+const POLL_INTERVAL_MS = 8000;
+const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+
+let state = {
+  comments: [],
+  updated_at: null,
+  doneSet: new Set(JSON.parse(localStorage.getItem(STORAGE_DONE) || '[]')),
+  filter: 'todo',
+};
+
+// ===== Utils =====
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return [...document.querySelectorAll(sel)]; }
+function esc(s) { return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function commentId(c) { return c.commentId || (c.author + '|' + c.date); }
+function saveDone() { localStorage.setItem(STORAGE_DONE, JSON.stringify([...state.doneSet])); }
+
+let toastTimer;
+function toast(msg, isError=false) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function banner(msg, isError=false) {
+  const b = $('#banner');
+  b.textContent = msg;
+  b.classList.toggle('error', isError);
+  b.classList.add('show');
+}
+function clearBanner() { $('#banner').classList.remove('show'); }
+
+// ===== Data Loading =====
+async function loadData(silent=false) {
+  try {
+    const resp = await fetch('./data.json?t=' + Date.now(), { cache: 'no-cache' });
+    if (!resp.ok) {
+      if (!silent) banner('data.json을 불러올 수 없습니다. 아직 수집을 한 번도 안 했거나, GitHub Pages가 배포 중일 수 있습니다.', true);
+      return false;
+    }
+    const data = await resp.json();
+    state.comments = data.comments || [];
+    state.updated_at = data.updated_kst || data.updated_at;
+    clearBanner();
+    render();
+    return true;
+  } catch (e) {
+    if (!silent) banner('데이터 로드 실패: ' + e.message, true);
+    return false;
+  }
+}
+
+// ===== Rendering =====
+function renderStats() {
+  const total = state.comments.length;
+  const done = state.comments.filter(c => state.doneSet.has(commentId(c))).length;
+  const todo = total - done;
+  $('#stats').innerHTML = `
+    <div class="stat"><div class="n">${todo}</div><div class="l">답변 대기</div></div>
+    <div class="stat"><div class="n">${done}</div><div class="l">완료 처리</div></div>
+    <div class="stat"><div class="n">${total}</div><div class="l">전체 표시</div></div>
+    <div class="stat"><div class="n">${state.updated_at || '-'}</div><div class="l">마지막 수집</div></div>
+  `;
+}
+
+function renderTabs() {
+  const tabs = [
+    {key:'todo', label:'답변 대기'},
+    {key:'done', label:'완료'},
+    {key:'all', label:'전체'}
+  ];
+  $('#tabs').innerHTML = tabs.map(t => {
+    let n = 0;
+    if (t.key === 'todo') n = state.comments.filter(c => !state.doneSet.has(commentId(c))).length;
+    else if (t.key === 'done') n = state.comments.filter(c => state.doneSet.has(commentId(c))).length;
+    else n = state.comments.length;
+    return `<div class="tab ${state.filter===t.key?'active':''}" data-key="${t.key}">${t.label}<span class="c">${n}</span></div>`;
+  }).join('');
+  $$('.tab').forEach(t => {
+    t.addEventListener('click', () => { state.filter = t.dataset.key; render(); });
+  });
+}
+
+function filtered() {
+  if (state.filter === 'todo') return state.comments.filter(c => !state.doneSet.has(commentId(c)));
+  if (state.filter === 'done') return state.comments.filter(c => state.doneSet.has(commentId(c)));
+  return state.comments;
+}
+
+function renderList() {
+  const list = filtered();
+  $('#empty').style.display = list.length === 0 ? 'block' : 'none';
+  $('#last-update').textContent = state.updated_at ? `마지막 수집: ${state.updated_at}` : '아직 수집 안 함';
+  $('#list').innerHTML = list.map((c, idx) => {
+    const id = commentId(c);
+    const done = state.doneSet.has(id);
+    const draft = c.ai_draft || '';
+    const studioUrl = c.video ? `https://studio.youtube.com/video/${c.video}/comments` : '';
+    return `
+      <div class="card ${done?'done':''}" data-idx="${idx}">
+        <div class="card-top">
+          <span class="author">${esc(c.author)}</span>
+          <span class="date">${c.date}</span>
+          ${c.likes > 0 ? `<span class="likes">♥ ${c.likes}</span>` : ''}
+          ${draft ? `<span class="badge b-ai">🤖 AI 초안</span>` : ''}
+          ${studioUrl ? `<a class="video-link" href="${studioUrl}" target="_blank" rel="noopener">유튜브 영상 ↗</a>` : ''}
+        </div>
+        <div class="text">${esc(c.text)}</div>
+        <div class="reply-box">
+          <div class="reply-label">📝 답글 초안</div>
+          <textarea class="reply-text">${esc(draft)}</textarea>
+          <div class="actions">
+            <button class="btn primary" data-action="copy-open">📋 복사 + YouTube Studio 열기</button>
+            <button class="btn success" data-action="done">✓ 완료 처리</button>
+            <button class="btn" data-action="copy">복사만</button>
+            <button class="btn ghost" data-action="skip">건너뛰기</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  $$('.card').forEach(card => {
+    const idx = parseInt(card.dataset.idx, 10);
+    const c = list[idx];
+    const textarea = card.querySelector('.reply-text');
+    card.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const a = btn.dataset.action;
+        if (a === 'copy' || a === 'copy-open') {
+          copyText(textarea.value);
+          toast('답글이 복사되었습니다');
+          if (a === 'copy-open' && c.video) {
+            window.open(`https://studio.youtube.com/video/${c.video}/comments`, '_blank', 'noopener');
+          }
+        } else if (a === 'done' || a === 'skip') {
+          state.doneSet.add(commentId(c));
+          saveDone();
+          render();
+        }
+      });
+    });
+  });
+}
+
+function render() {
+  renderStats();
+  renderTabs();
+  renderList();
+}
+
+function copyText(t) {
+  navigator.clipboard.writeText(t).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  });
+}
+
+// ===== Settings =====
+function openSettings() {
+  $('#cfg-repo').value = localStorage.getItem(STORAGE_REPO) || '';
+  $('#cfg-pat').value = localStorage.getItem(STORAGE_PAT) || '';
+  $('#settings-dialog').showModal();
+}
+
+function saveSettings() {
+  const repo = $('#cfg-repo').value.trim();
+  const pat = $('#cfg-pat').value.trim();
+  if (!repo.match(/^[\w-]+\/[\w.-]+$/)) {
+    alert('리포지토리 형식이 잘못됨. owner/repo 형식으로 입력하세요.');
+    return;
+  }
+  if (pat && !pat.match(/^(ghp_|github_pat_)/)) {
+    alert('PAT 형식이 잘못됨. ghp_ 또는 github_pat_ 로 시작해야 합니다.');
+    return;
+  }
+  localStorage.setItem(STORAGE_REPO, repo);
+  if (pat) localStorage.setItem(STORAGE_PAT, pat);
+  $('#settings-dialog').close();
+  toast('설정 저장됨');
+}
+
+// ===== Collect =====
+async function collect() {
+  let repo = localStorage.getItem(STORAGE_REPO);
+  let pat = localStorage.getItem(STORAGE_PAT);
+
+  if (!repo || !pat) {
+    toast('먼저 설정에서 리포지토리와 PAT을 입력해주세요', true);
+    openSettings();
+    return;
+  }
+
+  const btn = $('#btn-collect');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = '🔄 수집 중...';
+
+  try {
+    // workflow_dispatch 호출
+    const url = `https://api.github.com/repos/${repo}/actions/workflows/${WORKFLOW_FILE}/dispatches`;
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${pat}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify({ ref: 'main', inputs: { max_comments: '20' } }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`GitHub API 오류 (${resp.status}): ${err}`);
+    }
+
+    toast('GitHub Actions 수집 시작됨. 약 1~2분 소요...');
+    banner('수집 진행 중... 완료되면 자동으로 새로고침됩니다. GitHub Actions 탭에서 진행 상황을 확인할 수 있습니다.');
+
+    // Poll for update
+    const initialUpdate = state.updated_at;
+    const startTime = Date.now();
+    const interval = setInterval(async () => {
+      if (Date.now() - startTime > POLL_TIMEOUT_MS) {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.textContent = originalText;
+        banner('5분 안에 갱신이 감지되지 않았습니다. GitHub Actions 탭에서 직접 확인하세요.', true);
+        return;
+      }
+      const updated = await loadData(true);
+      if (updated && state.updated_at !== initialUpdate) {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.textContent = originalText;
+        toast(`수집 완료. ${state.comments.length}개 댓글 갱신됨`);
+        clearBanner();
+      }
+    }, POLL_INTERVAL_MS);
+
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    toast('수집 실패: ' + e.message, true);
+    banner('수집 실패: ' + e.message + ' / PAT 권한과 리포지토리 이름을 확인해주세요.', true);
+  }
+}
+
+// ===== Init =====
+$('#btn-collect').addEventListener('click', collect);
+$('#btn-refresh').addEventListener('click', () => loadData());
+$('#btn-settings').addEventListener('click', openSettings);
+
+loadData().then(loaded => {
+  if (!loaded && !localStorage.getItem(STORAGE_REPO)) {
+    openSettings();
+  }
+});
+</script>
+</body>
+</html>
