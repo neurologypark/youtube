@@ -26,12 +26,14 @@ h1 { font-size: 22px; margin: 0 0 4px; color: #111827; }
 
 .btn { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; }
 .btn:hover { background: #f3f4f6; }
-.btn.primary { background: #ef4444; color: #fff; border-color: #ef4444; }
-.btn.primary:hover { background: #dc2626; }
-.btn.primary:disabled { background:#fca5a5; cursor:wait; }
+.btn.primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.btn.primary:hover { background: #2563eb; }
+.btn.primary:disabled { background:#93c5fd; cursor:wait; }
 .btn.collect { background: #2563eb; color: #fff; border-color: #2563eb; font-size:14px; padding: 10px 18px; }
 .btn.collect:hover { background:#1d4ed8; }
 .btn.collect:disabled { background:#93c5fd; cursor:wait; }
+.btn.studio { background:#fff; color:#2563eb; border-color:#2563eb; font-size:14px; padding:10px 18px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; }
+.btn.studio:hover { background:#eff6ff; }
 .btn.success { background:#10b981; color:#fff; border-color:#10b981; }
 .btn.success:hover { background:#059669; }
 .btn.ghost { background: transparent; border-color: transparent; color: #6b7280; }
@@ -98,6 +100,7 @@ dialog .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin
     </div>
     <div class="header-actions">
       <button class="btn collect" id="btn-collect">🔄 수집 (20개)</button>
+      <a class="btn studio" href="https://studio.youtube.com/channel/UCFhliquzU-5I83gMrb-HIVw/comments/inbox?filter=%5B%7B%22isDisabled%22%3Afalse%2C%22isPinned%22%3Atrue%2C%22name%22%3A%22SORT_BY%22%2C%22value%22%3A%22SORT_BY_MOST_RELEVANT%22%7D%2C%7B%22name%22%3A%22ENGAGED_STATUS%22%2C%22value%22%3A%5B%22COMMENT_CATEGORY_NOT_ENGAGED%22%5D%7D%5D" target="_blank" rel="noopener">💬 댓글관리 바로가기</a>
       <button class="btn small" id="btn-refresh">새로고침</button>
       <button class="btn small ghost" id="btn-settings">⚙️ 설정</button>
     </div>
