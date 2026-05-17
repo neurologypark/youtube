@@ -123,6 +123,49 @@ dialog .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin
 .help-link:hover { text-decoration: underline; }
 
 @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* ===== 좌우 분할 레이아웃 ===== */
+.app-layout { display: flex; flex-direction: row; height: 100vh; overflow: hidden; }
+.panel-left { flex: 1; overflow-y: auto; min-width: 0; }
+.panel-right { width: 360px; flex-shrink: 0; overflow-y: auto; background: #f5f4f0; border-left: 2px solid #e5e7eb; }
+
+@media (max-width: 900px) {
+  .app-layout { flex-direction: column; height: auto; overflow: visible; }
+  .panel-left  { height: 50vh; overflow-y: auto; order: 2; border-top: 2px solid #e5e7eb; }
+  .panel-right { width: 100%; height: 50vh; overflow-y: auto; order: 1; border-left: none; border-bottom: 2px solid #e5e7eb; }
+}
+
+/* ===== 샘플 댓글 패널 ===== */
+.sp-header { padding: 14px 16px 10px; border-bottom: 1px solid #e5e7eb; background: #fff; position: sticky; top: 0; z-index: 10; }
+.sp-header h2 { font-size: 14px; font-weight: 700; color: #1a1a18; margin: 0 0 2px; }
+.sp-header p  { font-size: 12px; color: #888; margin: 0; }
+.sp-body { padding: 12px 14px 24px; }
+.sp-filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.sp-filter-btn { padding: 4px 11px; border: 1px solid #ddd; border-radius: 20px; font-size: 12px; cursor: pointer; background: #fff; color: #666; user-select: none; transition: all .15s; }
+.sp-filter-btn.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
+.sp-grid { display: flex; flex-direction: column; gap: 8px; }
+.sp-card { background: #fff; border: 1px solid #e8e6e0; border-radius: 10px; padding: 12px 12px 28px; cursor: pointer; position: relative; transition: border-color .15s; }
+.sp-card:hover { border-color: #aaa; }
+.sp-card.copied { border-color: #1D9E75; }
+.sp-cat { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 5px; margin-bottom: 6px; font-weight: 600; }
+.sp-cat-감사 { background: #e6f1fb; color: #185FA5; }
+.sp-cat-회복 { background: #eaf3de; color: #3B6D11; }
+.sp-cat-병원 { background: #faeeda; color: #854F0B; }
+.sp-cat-의학 { background: #f1efe8; color: #5F5E5A; }
+.sp-text { font-size: 13px; color: #1a1a18; line-height: 1.65; white-space: pre-wrap; }
+.sp-hint { position: absolute; top: 10px; right: 10px; font-size: 11px; color: #bbb; }
+.sp-hint.ok { color: #1D9E75; font-weight: 600; }
+.sp-del { position: absolute; bottom: 6px; right: 8px; font-size: 11px; color: #ccc; background: none; border: none; cursor: pointer; }
+.sp-del:hover { color: #e24b4a; }
+.sp-add { margin-top: 14px; background: #fff; border: 1px solid #e8e6e0; border-radius: 10px; padding: 14px; }
+.sp-add h3 { font-size: 13px; font-weight: 600; margin: 0 0 10px; color: #1a1a18; }
+.sp-add select, .sp-add textarea { font-family: inherit; font-size: 13px; border: 1px solid #ddd; border-radius: 7px; padding: 7px 10px; background: #fff; outline: none; width: 100%; margin-bottom: 8px; }
+.sp-add select { height: 34px; }
+.sp-add textarea { min-height: 72px; resize: vertical; }
+.sp-add select:focus, .sp-add textarea:focus { border-color: #888; }
+.sp-add-btn { padding: 7px 16px; background: #1a1a18; color: #fff; border: none; border-radius: 7px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.sp-add-btn:hover { background: #333; }
+.sp-empty { text-align: center; color: #aaa; font-size: 13px; padding: 20px 0; }
 </style>
 </head>
 <body>
@@ -153,26 +196,62 @@ dialog .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin
   </div>
 </div>
 
-<div class="wrap">
-  <header>
-    <div>
-      <h1>박재현 채널 댓글 답글 대시보드</h1>
-      <div class="sub">YouTube Studio "응답 없음" 필터와 동일 · 최신순 · AI 초안 자동 작성</div>
-      <div class="last-update" id="last-update">로딩 중...</div>
-    </div>
-    <div class="header-actions">
-      <button class="btn collect" id="btn-collect">🔄 수집 (20개)</button>
-      <a class="btn studio" href="https://studio.youtube.com/channel/UCFhliquzU-5I83gMrb-HIVw/comments/inbox?filter=%5B%7B%22isDisabled%22%3Afalse%2C%22isPinned%22%3Atrue%2C%22name%22%3A%22SORT_BY%22%2C%22value%22%3A%22SORT_BY_MOST_RELEVANT%22%7D%2C%7B%22name%22%3A%22ENGAGED_STATUS%22%2C%22value%22%3A%5B%22COMMENT_CATEGORY_NOT_ENGAGED%22%5D%7D%5D" target="_blank" rel="noopener">💬 댓글관리 바로가기</a>
-      <button class="btn small" id="btn-refresh">새로고침</button>
-      <button class="btn small ghost" id="btn-settings">⚙️ 설정</button>
-    </div>
-  </header>
+<div class="app-layout">
 
-  <div class="banner" id="banner"></div>
-  <div class="stats" id="stats"></div>
-  <div class="tabs" id="tabs"></div>
-  <div class="list" id="list"></div>
-  <div class="empty" id="empty" style="display:none">표시할 댓글이 없습니다. "🔄 수집" 버튼으로 새 댓글을 가져오세요.</div>
+  <!-- 왼쪽: 기존 댓글 대시보드 -->
+  <div class="panel-left">
+    <div class="wrap">
+      <header>
+        <div>
+          <h1>박재현 채널 댓글 답글 대시보드</h1>
+          <div class="sub">YouTube Studio "응답 없음" 필터와 동일 · 최신순 · AI 초안 자동 작성</div>
+          <div class="last-update" id="last-update">로딩 중...</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn collect" id="btn-collect">🔄 수집 (20개)</button>
+          <a class="btn studio" href="https://studio.youtube.com/channel/UCFhliquzU-5I83gMrb-HIVw/comments/inbox?filter=%5B%7B%22isDisabled%22%3Afalse%2C%22isPinned%22%3Atrue%2C%22name%22%3A%22SORT_BY%22%2C%22value%22%3A%22SORT_BY_MOST_RELEVANT%22%7D%2C%7B%22name%22%3A%22ENGAGED_STATUS%22%2C%22value%22%3A%5B%22COMMENT_CATEGORY_NOT_ENGAGED%22%5D%7D%5D" target="_blank" rel="noopener">💬 댓글관리 바로가기</a>
+          <button class="btn small" id="btn-refresh">새로고침</button>
+          <button class="btn small ghost" id="btn-settings">⚙️ 설정</button>
+        </div>
+      </header>
+
+      <div class="banner" id="banner"></div>
+      <div class="stats" id="stats"></div>
+      <div class="tabs" id="tabs"></div>
+      <div class="list" id="list"></div>
+      <div class="empty" id="empty" style="display:none">표시할 댓글이 없습니다. "🔄 수집" 버튼으로 새 댓글을 가져오세요.</div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 샘플 댓글 패널 -->
+  <div class="panel-right">
+    <div class="sp-header">
+      <h2>📋 샘플 댓글</h2>
+      <p>카드 클릭 시 복사 · 추가/삭제 가능 · <span id="sp-count"></span>개</p>
+    </div>
+    <div class="sp-body">
+      <div class="sp-filter-row">
+        <div class="sp-filter-btn active" onclick="spFilter('all',this)">전체</div>
+        <div class="sp-filter-btn" onclick="spFilter('감사',this)">감사 응답</div>
+        <div class="sp-filter-btn" onclick="spFilter('회복',this)">회복 기원</div>
+        <div class="sp-filter-btn" onclick="spFilter('병원',this)">병원 안내</div>
+        <div class="sp-filter-btn" onclick="spFilter('의학',this)">의학 정보</div>
+      </div>
+      <div class="sp-grid" id="sp-grid"></div>
+      <div class="sp-add">
+        <h3>+ 새 댓글 추가</h3>
+        <select id="sp-new-cat">
+          <option value="감사">감사 응답</option>
+          <option value="회복">회복 기원</option>
+          <option value="병원">병원 안내</option>
+          <option value="의학">의학 정보</option>
+        </select>
+        <textarea id="sp-new-text" placeholder="새 댓글 내용을 입력하세요..."></textarea>
+        <button class="sp-add-btn" onclick="spAddComment()">추가</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -494,6 +573,100 @@ async function collect() {
     banner('수집 실패: ' + e.message + ' / PAT 권한과 리포지토리 이름을 확인해주세요.', true);
   }
 }
+
+// ===== 샘플 댓글 패널 =====
+const SP_STORAGE_KEY = 'brain_doctor_comments';
+const SP_CAT_LABEL = { '감사':'감사 응답', '회복':'회복 기원', '병원':'병원 안내', '의학':'의학 정보' };
+let spCurrentFilter = 'all';
+
+let spComments = [
+  { cat:'감사', text:'감사합니다 ^^' },
+  { cat:'감사', text:'시청해 주셔서 감사드립니다.' },
+  { cat:'감사', text:'댓글 감사합니다 ^^' },
+  { cat:'감사', text:'도움이 되셨으면 좋겠네요. 댓글 감사합니다.' },
+  { cat:'감사', text:'좋은 댓글로 힘이 납니다~! 감사합니다' },
+  { cat:'감사', text:'소중한 댓글 감사합니다.' },
+  { cat:'감사', text:'좋게 봐주셔서 감사해요!' },
+  { cat:'감사', text:'도움이 되셨다니 다행입니다 ^^' },
+  { cat:'감사', text:'제 영상이 도움이 되셨다니 너무 다행이네요 ^^\n앞으로도 유익한 콘텐츠로 찾아오겠습니다. 건강하세요!' },
+  { cat:'감사', text:'맞아요, 저도 직접 겪어봤기에 얼마나 힘드신지 누구보다 잘 알고 있습니다. 그 경험이 오히려 더 도움이 되는 진료와 콘텐츠를 만들 수 있는 원동력이 되고 있어요. 따뜻한 댓글 감사합니다. 앞으로도 실질적으로 도움이 되는 영상으로 찾아오겠습니다 :)' },
+  { cat:'회복', text:'빠른 회복 바랍니다!' },
+  { cat:'회복', text:'부디 빨리 회복되시기를 바랍니다.' },
+  { cat:'회복', text:'앞으로는 재발없이 항상 건강하시기를 기원합니다!' },
+  { cat:'회복', text:'이석증 없을 때는 할 필요 없습니다. 빠른 회복 바랍니다.' },
+  { cat:'회복', text:'분명 좋아지실 수 있을 겁니다. 너무 걱정마세요.' },
+  { cat:'회복', text:'좋아지셨다니 너무 다행이네요. 재발 없이 항상 건강하시길 바랍니다!' },
+  { cat:'회복', text:'응원합니다~!!' },
+  { cat:'병원', text:'서울 양재역 2번 출구 삼성스마트신경과 서울점입니다. 02-2138-2777 로 예약하시면 됩니다!' },
+  { cat:'병원', text:'지금은 서울 양재 삼성스마트신경과 서울점에서 근무 중이니 여기로 오시면 됩니다.' },
+  { cat:'병원', text:'네. 오셔서 진료보고 정확히 알려드릴게요.\n서울 양재역2번출구 삼성스마트신경과 서울점입니다.\n02-2138-2777 로 전화해서 예약하시면 됩니다!' },
+  { cat:'의학', text:'이석증 치료후 해당 증상은 흔합니다. 평균 2주 정도 지속이 됩니다. 이석이 약간 남거나, 반고리관이 자극을 받아서 그런데 며칠 더 보시고 지속되면 재치료 받는 것이 좋습니다.' },
+  { cat:'의학', text:'이석증은 움직이는 순간 어지럽고, 전정신경염은 계속 어지러운 특징이 있습니다.\n다만 증상으로 자가 판단하기 쉽지가 않아서, 병원 진료 받아보시는 것이 좋습니다.' },
+  { cat:'의학', text:'대부분 2-4주 이내에 좋아집니다!' },
+  { cat:'의학', text:'여러 원인이 있을 수 있습니다. 불안, 편두통성 어지럼, 이석증 등 다 가능하니, 가까운 신경과에서 검사 받아보세요.' },
+  { cat:'의학', text:'답이 늦어 죄송합니다. 근처 신경과 가보시면 될 듯 합니다!' },
+  { cat:'의학', text:'꾸준히 계속 하시길 추천드립니다.' },
+  { cat:'의학', text:'네. 간혹 그럴 수 있기 때문에 담당 선생님과 상의해서 결정하세요.' },
+  { cat:'의학', text:'가까운 신경과 가보세요!' },
+  { cat:'의학', text:'혹시 2-3일 후에도 증상 지속되면 신경과 진료도 보는 것이 좋겠습니다.' },
+  { cat:'의학', text:'제 생각에 그 정도는 큰 문제는 없을 듯 합니다.\n다만 제가 직접 진료한 것이 아니니 담당 병원 선생님과 먼저 상의해보세요!' },
+];
+
+function spSave() {
+  try { localStorage.setItem(SP_STORAGE_KEY, JSON.stringify(spComments)); } catch(e) {}
+}
+function spLoad() {
+  try { const s = localStorage.getItem(SP_STORAGE_KEY); if (s) spComments = JSON.parse(s); } catch(e) {}
+}
+function spRender() {
+  const grid = document.getElementById('sp-grid');
+  const list = spCurrentFilter === 'all' ? spComments : spComments.filter(c => c.cat === spCurrentFilter);
+  document.getElementById('sp-count').textContent = spComments.length;
+  if (!list.length) { grid.innerHTML = '<div class="sp-empty">해당 카테고리 댓글이 없습니다.</div>'; return; }
+  grid.innerHTML = list.map(c => {
+    const i = spComments.indexOf(c);
+    return `<div class="sp-card" onclick="spCopy(event,${i})">
+      <span class="sp-hint" id="sp-hint-${i}">클릭해서 복사</span>
+      <div class="sp-cat sp-cat-${c.cat}">${SP_CAT_LABEL[c.cat]}</div>
+      <div class="sp-text">${c.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+      <button class="sp-del" onclick="spDelete(event,${i})">삭제</button>
+    </div>`;
+  }).join('');
+}
+function spCopy(e, i) {
+  if (e.target.classList.contains('sp-del')) return;
+  const text = spComments[i].text;
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = text;
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(ex) {}
+    document.body.removeChild(ta);
+  });
+  const hint = document.getElementById('sp-hint-' + i);
+  if (!hint) return;
+  hint.closest('.sp-card').classList.add('copied');
+  hint.textContent = '복사됨!'; hint.classList.add('ok');
+  setTimeout(() => { hint.closest('.sp-card').classList.remove('copied'); hint.textContent = '클릭해서 복사'; hint.classList.remove('ok'); }, 1500);
+}
+function spDelete(e, i) {
+  e.stopPropagation();
+  if (!confirm('이 댓글을 삭제할까요?')) return;
+  spComments.splice(i, 1); spSave(); spRender();
+}
+function spFilter(cat, btn) {
+  spCurrentFilter = cat;
+  document.querySelectorAll('.sp-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active'); spRender();
+}
+function spAddComment() {
+  const cat = document.getElementById('sp-new-cat').value;
+  const text = document.getElementById('sp-new-text').value.trim();
+  if (!text) { alert('내용을 입력하세요.'); return; }
+  spComments.push({ cat, text }); spSave();
+  document.getElementById('sp-new-text').value = '';
+  spRender();
+}
+spLoad(); spRender();
 
 // ===== Init =====
 $('#btn-collect').addEventListener('click', collect);
