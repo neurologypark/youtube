@@ -126,13 +126,27 @@ dialog .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin
 
 /* ===== 좌우 분할 레이아웃 ===== */
 .app-layout { display: flex; flex-direction: row; height: 100vh; overflow: hidden; }
-.panel-left { flex: 1; overflow-y: auto; min-width: 0; }
-.panel-right { width: 360px; flex-shrink: 0; overflow-y: auto; background: #f5f4f0; border-left: 2px solid #e5e7eb; }
+.panel-left  { flex: 1; overflow-y: auto; min-width: 0; }
+.panel-right { width: 360px; flex-shrink: 0; overflow-y: auto; background: #f5f4f0; }
+
+/* 분할선 */
+.divider {
+  flex-shrink: 0; background: #e5e7eb; cursor: col-resize;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; z-index: 20; width: 6px; transition: background .15s;
+}
+.divider:hover, .divider.dragging { background: #93c5fd; }
+.divider-handle {
+  width: 2px; height: 36px; background: #9ca3af; border-radius: 2px; pointer-events: none;
+}
+.divider:hover .divider-handle, .divider.dragging .divider-handle { background: #2563eb; }
 
 @media (max-width: 900px) {
-  .app-layout { flex-direction: column; height: 100vh; overflow: hidden; }
-  .panel-left  { height: 50vh; overflow-y: auto; order: 2; border-right: none; border-top: 2px solid #e5e7eb; }
-  .panel-right { width: 100%; height: 50vh; overflow-y: auto; order: 1; border-left: none; border-bottom: 2px solid #e5e7eb; }
+  .app-layout  { flex-direction: column; height: 100vh; overflow: hidden; }
+  .panel-left  { flex: none; height: 50vh; overflow-y: auto; order: 3; }
+  .panel-right { flex: none; width: 100%; height: 50vh; overflow-y: auto; order: 1; }
+  .divider     { order: 2; width: 100%; height: 8px; cursor: row-resize; }
+  .divider-handle { width: 36px; height: 2px; }
 }
 
 /* ===== 샘플 댓글 패널 ===== */
@@ -222,6 +236,9 @@ dialog .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin
       <div class="empty" id="empty" style="display:none">표시할 댓글이 없습니다. "🔄 수집" 버튼으로 새 댓글을 가져오세요.</div>
     </div>
   </div>
+
+  <!-- 분할선 -->
+  <div class="divider" id="divider"><div class="divider-handle"></div></div>
 
   <!-- 오른쪽: 샘플 댓글 패널 -->
   <div class="panel-right">
@@ -573,6 +590,68 @@ async function collect() {
     banner('수집 실패: ' + e.message + ' / PAT 권한과 리포지토리 이름을 확인해주세요.', true);
   }
 }
+
+// ===== 분할선 드래그 =====
+(function() {
+  const divider   = document.getElementById('divider');
+  const panelL    = document.querySelector('.panel-left');
+  const panelR    = document.querySelector('.panel-right');
+  const layout    = document.querySelector('.app-layout');
+  let dragging    = false;
+
+  function isHoriz() { return window.innerWidth > 900; }
+
+  function getClientPos(e) {
+    return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                     : { x: e.clientX, y: e.clientY };
+  }
+
+  function onStart(e) {
+    dragging = true;
+    divider.classList.add('dragging');
+    e.preventDefault();
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup',   onEnd);
+    document.addEventListener('touchend',  onEnd);
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    const rect = layout.getBoundingClientRect();
+    const pos  = getClientPos(e);
+    if (isHoriz()) {
+      const newW = Math.max(200, Math.min(rect.width - 200, pos.x - rect.left));
+      panelL.style.flex  = 'none';
+      panelL.style.width = newW + 'px';
+      panelR.style.flex  = '1';
+      panelR.style.width = '';
+    } else {
+      const newH = Math.max(80, Math.min(rect.height - 80, pos.y - rect.top));
+      panelR.style.height = newH + 'px';
+      panelL.style.height = (rect.height - newH - 8) + 'px';
+    }
+  }
+
+  function onEnd() {
+    dragging = false;
+    divider.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('mouseup',   onEnd);
+    document.removeEventListener('touchend',  onEnd);
+  }
+
+  // 창 크기 바뀌면 스타일 초기화
+  window.addEventListener('resize', () => {
+    panelL.style.flex = ''; panelL.style.width = ''; panelL.style.height = '';
+    panelR.style.flex = ''; panelR.style.width = ''; panelR.style.height = '';
+  });
+
+  divider.addEventListener('mousedown',  onStart);
+  divider.addEventListener('touchstart', onStart, { passive: false });
+})();
 
 // ===== 샘플 댓글 패널 =====
 const SP_STORAGE_KEY = 'brain_doctor_comments';
